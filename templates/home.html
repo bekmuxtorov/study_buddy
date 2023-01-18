@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="content-items d-flex justify-content-around">
+    <div class="content-item">
+        <h4>Topiclar</h4>
+        <ul>
+            <li><a href="{% url 'home' %}">All</a></li>
+            {% for topic in topics %}
+            <li><a href="{% url 'home' %}?q={{ topic.name }}">{{ topic.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="content-item">
+        <h4>Xonalar</h4>
+        <a href="{% url 'add_room' %}">+Xona qo'shish</a>
+        <ul>
+            {% for room in rooms %}
+            <li>
+                {% if room.host == user %}
+                <a href="{% url 'room_update' pk=room.id %}">Tahrirlash</a>
+                <a href="{% url 'room_delete' pk=room.id %}">O'chirish</a>
+                {% endif %}
+                <p>@{{ room.host.username }}</p>
+                <p><a href="{% url 'room_detail' pk=room.id %}">{{ room.id }}-- {{ room.name }}</a></p>
+                <small>{{ room.created|timesince }}</small>
+                <p>{{ room.description | slice:":60" }}...</p>
+                <b>{{ room.topic }}</b>
+            </li>
+            <hr>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="content-item">
+        <h4>Guruh a'zolari</h4>
+    </div>
+</div>
+{% endblock content %}

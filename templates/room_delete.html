@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<form action="" method="post">
+    {% csrf_token %}
+    <label for="delete">Rostan ham o'chirilsinmi: {{ room }}?</label>
+    <a href="{{ request.META.HTTP_REFERER }}">Ortga</a>
+    <input type="submit" value="Ha">
+</form>
+{% endblock content %}
