@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <form action="" method="post">
+        {% csrf_token %}
+
+        <label for="username">Username</label>
+        <input type="text" name="username" id="username" placeholder="username">
+
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" placeholder="password">
+        <input class="btn btn-primary" type="submit" value="Login">
+        <p>{{ message }}</p>
+
+    </form>
+
+    <p>Ro'yhatdan o'tmaganmisz? <a href="{% url 'register' %}">Ro'yhatdan o'tish</a></p>
+</div>
+{% endblock content %}

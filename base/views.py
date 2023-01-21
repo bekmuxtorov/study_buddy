@@ -3,14 +3,18 @@ from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.http import HttpResponse
 
 from . import models
-from .forms import RoomForms
+from .forms import RoomForms, MessageForms
 
 # Create your views here.
 
 
 def home_page_view(request):
+    messages = models.Message.objects.all().order_by('-created')
     topics = models.Topic.objects.all()
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     rooms = models.Room.objects.filter(
@@ -21,15 +25,18 @@ def home_page_view(request):
 
     context = {
         'topics': topics,
-        'rooms': rooms
+        'rooms': rooms,
+        'messages': messages
     }
     return render(request, 'home.html', context)
 
 
-def add_home_page(request):
+@login_required(login_url='login')
+def add_room_page(request):
     form = RoomForms()
     if request.method == 'POST':
         form = RoomForms(request.POST)
+        
         if form.is_valid():
             form.save()
             return redirect('home')
@@ -44,9 +51,36 @@ def add_home_page(request):
 
 def room_detail_view(request, pk):
     obj = models.Room.objects.get(pk=pk)
-    return render(request, 'room_detail.html', {'obj': obj})
+    messages = models.Message.objects.filter(room=pk).order_by('-created')
+    participants = obj.participants.all()
+    participant_count = participants.count()
+    if request.method == 'POST':
+        user = request.user
+        body = request.POST.get('message')
+
+        if user.is_authenticated:
+            models.Message.objects.create(
+                user=user,
+                body=body,
+                room_id=pk
+            )
+        else:
+            return redirect('login')
+
+        obj.participants.add(request.user)
+        return redirect('room_detail', pk=pk)
+
+    context = {
+        'messages': messages,
+        'obj': obj,
+        'participants': participants,
+        'participant_count': participant_count
+    }
+
+    return render(request, 'room_detail.html', context)
 
 
+@login_required(login_url='login')
 def room_update(request, pk):
     room = models.Room.objects.get(pk=pk)
     form = RoomForms(instance=room)
@@ -60,6 +94,7 @@ def room_update(request, pk):
     return render(request, 'room_update.html', {'form': form})
 
 
+@login_required(login_url='login')
 def room_delete(request, pk):
     room = models.Room.objects.get(pk=pk)
     if request.method == "POST":
@@ -91,9 +126,57 @@ def login_view(request):
 
 
 def register_view(request):
-    return render(request, 'register.html')
+    message = ''
+    form = UserCreationForm()
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+        else:
+            message = 'To\'ldirishda xatolik!'
+
+    context = {
+        'form': form,
+        'message': message
+    }
+    return render(request, 'register.html', context)
 
 
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+
+@login_required(login_url='login')
+def message_delete(request, pk):
+    obj = models.Message.objects.get(pk=pk)
+    obj_room = obj.room.id
+    if request.method == "POST":
+        obj.delete()
+        return redirect('room_detail', pk=obj_room)
+    return render(request, 'room_delete.html', {'obj': obj})
+
+
+@login_required(login_url='login')
+def message_update(request, pk):
+    msg = ''
+    choosse_message = models.Message.objects.get(pk=pk)
+    choosse_message_room = choosse_message.room.id
+    if choosse_message.user == request.user:
+        form = MessageForms(instance=choosse_message)
+        if request.method == "POST":
+            form = MessageForms(request.POST, instance=choosse_message)
+            if form.is_valid():
+                form.save()
+            else:
+                msg = 'To\'ldirishda xatolik!'
+
+            return redirect('room_detail', pk=choosse_message_room)
+        context = {
+            'form': form,
+            'msg': msg
+        }
+        return render(request, 'message_update.html', context)
+
+    return HttpResponse("Siz bu xabarni tahrirlay olmaysz")
