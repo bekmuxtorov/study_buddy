@@ -6,7 +6,11 @@
         <ul>
             <li><a href="{% url 'home' %}">All</a></li>
             {% for topic in topics %}
-            <li><a href="{% url 'home' %}?q={{ topic.name }}">{{ topic.name }}</a></li>
+            <li>
+                <a href="{% url 'home' %}?q={{ topic.name }}">{{ topic.name }}</a>
+                <a class="">Follow</a>
+            </li>
+
             {% endfor %}
         </ul>
     </div>
@@ -33,7 +37,21 @@
     </div>
 
     <div class="content-item">
-        <h4>Guruh a'zolari</h4>
+        <h4>So'ngi harakatlar</h4>
+        {% for message in messages %}
+        <li>
+            {% if message.user == user %}
+            <a href="{% url 'message_delete' pk=message.pk %}">Delete</a>
+            <a href="{% url 'message_update' pk=message.pk %}">Edit</a>
+            {% endif %}
+            <h5>@{{ message.user }}</h5>
+            <small>{{ message.created|timesince }}</small>
+            <p>{{ message.body|slice:":60" }}</p>
+
+        </li>
+        <hr>
+
+        {% endfor %}
     </div>
 </div>
 {% endblock content %}

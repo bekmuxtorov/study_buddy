@@ -17,7 +17,8 @@ class Room(models.Model):
         Topic, on_delete=models.SET_NULL, blank=True, null=True)
     name = models.CharField(max_length=200, verbose_name='Xona nomi')
     description = models.TextField(verbose_name='Xona haqida ma\'lumot')
-    # participants =
+    participants = models.ManyToManyField(
+        User, related_name='participants', blank=True)
     update = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 
