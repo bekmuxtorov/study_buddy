@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-around">
+<div class="container d-flex justify-content-around">
     <div>
         <h4>
             <h5>
@@ -12,12 +12,46 @@
                 {{ obj.description }}
             </p>
         </h4>
+        <hr>
+
+        <div class="messages">
+            <ul>
+                {% for message in messages %}
+                <li>
+                    {% if message.user == user %}
+                    <a href="{% url 'message_delete' pk=message.pk %}">Delete</a>
+                    <a href="{% url 'message_update' pk=message.pk %}">Edit</a>
+                    {% endif %}
+                    <h5>@{{ message.user }}</h5>
+                    <small>{{ message.created|timesince }}</small>
+                    <p>{{ message.body }}</p>
+
+                </li>
+                <hr>
+
+                {% endfor %}
+            </ul>
+
+            <form action="" method="post">
+                {% csrf_token %}
+                <input type="text" name="message" placeholder="Xabaringizni kiriting" required>
+            </form>
+        </div>
     </div>
 
     <div>
         <h4>
-            Guruh a'zolari
+            Guruh a'zolari ({{ participant_count }} ta)
         </h4>
+        <ul>
+
+            {% for participant in participants %}
+            <li>
+                <p>{{ participant.first_name }}</p>
+                <p>@{{participant}}</p>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
 </div>
 {% endblock content %}

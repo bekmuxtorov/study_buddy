@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-<form action="" method="post">
+<form class="container" action="" method="post">
     {% csrf_token %}
-    <label for="delete">Rostan ham o'chirilsinmi: {{ room }}?</label>
+    <label for="delete">Rostan ham o'chirilsinmi: {{ obj }}?</label>
     <a href="{{ request.META.HTTP_REFERER }}">Ortga</a>
     <input type="submit" value="Ha">
 </form>
